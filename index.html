@@ -6,7 +6,7 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Artifact Viewer</title>
-      <script type="module" crossorigin src="/memory-fys-game/assets/index-8qDLajsS.js"></script>
+      <script type="module" crossorigin src="/memory-fys-game/assets/index-L28VUdPQ.js"></script>
       <link rel="stylesheet" crossorigin href="/memory-fys-game/assets/index-C099JD6y.css">
     </head>
   <body>
@@ -16,10 +16,17 @@
       <button type="button" class="btn btn-primary" onclick="init()">Start</button>
       <div class="form-group"></div>
         <label for="model-url">Teachable machine model URL:</label>
-        <input type="text" class="form-control" id="model-url" value="https://teachablemachine.withgoogle.com/models/rnDxAsp_L/" placeholder="Enter model URL">
+        <input type="text" class="form-control" id="model-url" value="https://teachablemachine.withgoogle.com/models/6_GmsYiq2/" placeholder="Enter model URL">
       </div>
       <div id="label-container"></div>
       <script type="text/javascript">
+          // Add this at the top with your other variables
+          let currentSequence = [];
+          const sequenceDisplay = document.createElement('div');
+          sequenceDisplay.id = 'sequence-display';
+          document.body.appendChild(sequenceDisplay);
+
+
           async function createModel() {
               const URL = document.getElementById("model-url").value;
               // Add a trailing slash to the URL if it doesn't exist
@@ -44,81 +51,121 @@
                   labelContainer.appendChild(document.createElement("div"));
               }
               
-              // Add this at the top with your other variables
-              let currentSequence = [];
-              const sequenceDisplay = document.createElement('div');
-              sequenceDisplay.id = 'sequence-display';
-              document.body.appendChild(sequenceDisplay);
+            
 
 
 
-              recognizer.listen(result => {
-        // Get the most confident prediction
-        const scores = result.scores;
-        const maxScore = Math.max(...scores);
-        const predictedIndex = scores.indexOf(maxScore);
-        const predictedLabel = classLabels[predictedIndex];
+             // Modify the listen callback in your init() function
+recognizer.listen(result => {
+    // Get the most confident prediction
+    const scores = result.scores;
+    const maxScore = Math.max(...scores);
+    const predictedIndex = scores.indexOf(maxScore);
+    const predictedLabel = cleanLabel(classLabels[predictedIndex]); // Clean the label
 
-        // Update raw predictions display
-        for (let i = 0; i < classLabels.length; i++) {
-            const classPrediction = classLabels[i] + ": " + result.scores[i].toFixed(2);
-            labelContainer.childNodes[i].innerHTML = classPrediction;
-        }
+    // Update raw predictions display
+    for (let i = 0; i < classLabels.length; i++) {
+        const classPrediction = classLabels[i] + ": " + result.scores[i].toFixed(2);
+        labelContainer.childNodes[i].innerHTML = classPrediction;
+    }
 
-        // Only process predictions above threshold (e.g., 0.8)
-        if (maxScore > 0.8) {
-            // Update sequence
-            if (currentSequence.length === 0) {
-                currentSequence.push(predictedLabel);
-            } else {
-                // If this is a different label than the last one
-                if (predictedLabel !== currentSequence[currentSequence.length - 1]) {
-                    if (currentSequence.length === 1) {
-                        // Check if it forms a valid sequence
-                        if (isValidSequence(currentSequence[0], predictedLabel)) {
-                            currentSequence.push(predictedLabel);
-                        } else {
-                            // Reset to just the new label if not a valid sequence
-                            currentSequence = [predictedLabel];
-                        }
+    // Only process predictions above threshold (e.g., 0.8)
+    if (maxScore > 0.8) {
+        // Update sequence
+        if (currentSequence.length === 0) {
+            currentSequence.push(predictedLabel);
+        } else {
+            // If this is a different label than the last one
+            if (predictedLabel !== currentSequence[currentSequence.length - 1]) {
+                if (currentSequence.length === 1) {
+                    // Check if it forms a valid sequence
+                    if (isValidSequence(currentSequence[0], predictedLabel)) {
+                        currentSequence.push(predictedLabel);
                     } else {
-                        // Reset to just the new label if we already have 2 items
+                        // Reset to just the new label if not a valid sequence
                         currentSequence = [predictedLabel];
                     }
+                } else {
+                    // Reset to just the new label if we already have 2 items
+                    currentSequence = [predictedLabel];
                 }
             }
-
-            // Display current sequence
-            updateSequenceDisplay();
         }
-    }, {
-        includeSpectrogram: true,
-        probabilityThreshold: 0.75,
-        invokeCallbackOnNoiseAndUnknown: true,
-        overlapFactor: 0.50
-    });
+
+        // Display current sequence
+        updateSequenceDisplay();
+    }
+}, {
+    includeSpectrogram: true,
+    probabilityThreshold: 0.75,
+    invokeCallbackOnNoiseAndUnknown: true,
+    overlapFactor: 0.50
+});
           }
+
+
+
+
+// Add this to clean up the sequence labels
+function cleanLabel(label) {
+    // If it starts with #, remove it
+    return label.replace('#', '');
+}
+
 
 
       // Add these helper functions
 function isValidSequence(first, second) {
     // Define valid sequences here
-    const validSequences = {
-        'A': ['2'],  // A can be followed by 2
-        // Add more valid first letters and their allowed followers
-    };
+    // Valid sequences are any letter followed by any number (or #1, #2 as they are labeled)
+    const validLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const validNumbers = ['1', '2', '3', '4', '5', '6'];
 
-    return validSequences[first] && validSequences[first].includes(second);
+    return (validLetters.includes(first) && validNumbers.includes(second));
+
+}
+
+
+// Add this function to convert letter+number to coordinates
+function sequenceToCoordinates(sequence) {
+    if (sequence.length !== 2) return null;
+    
+    const letter = sequence[0];
+    const number = sequence[1];
+    
+    // Convert letter to column (A=0, B=1, etc.)
+    const col = letter.charCodeAt(0) - 'A'.charCodeAt(0);
+    
+    // Convert number to row (1=0, 2=1, etc.)
+    const row = parseInt(number) - 1;
+    
+    return { row, col };
 }
 
 function updateSequenceDisplay() {
     sequenceDisplay.innerHTML = `Current Sequence: ${currentSequence.join(' → ')}`;
     
-    // Optional: Add some basic styling
-    sequenceDisplay.style.padding = '10px';
-    sequenceDisplay.style.margin = '10px 0';
-    sequenceDisplay.style.fontWeight = 'bold';
-    sequenceDisplay.style.backgroundColor = currentSequence.length === 2 ? '#e0ffe0' : '#fff';
+    // If we have a complete sequence
+    if (currentSequence.length === 2) {
+        const sequence = currentSequence.join('');
+        const coords = sequenceToCoordinates(sequence);
+        
+        if (coords) {
+            // Find the button element and click it
+            const buttons = document.querySelectorAll('button');
+            const targetButton = Array.from(buttons).find(button => {
+                const buttonId = button.getAttribute('data-position');
+                return buttonId === `${coords.row},${coords.col}`;
+            });
+            
+            if (targetButton && !targetButton.disabled) {
+                targetButton.click();
+            }
+        }
+        
+        // Reset sequence after attempting click
+        currentSequence = [];
+    }
 }
       </script>
   </div>
