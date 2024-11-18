@@ -151,7 +151,7 @@ const MemoryGame = () => {
   const startNewGame = () => {
     const newBoard = initializeBoard();
     setBoard(newBoard);
-    setMatchedCards(new Set());
+    setMatchedCards(new Map());
     setRevealedCards([]);
     setPlayerMatches(0);
     setAiMatches(0);
@@ -322,26 +322,27 @@ if (board[r1][c1] === board[r2][c2]) {
               
             return (
               <button
-                key={`${i}-${j}`}
-                onClick={() => handleCardClick(i, j)}
-                style={{
+              key={`${i}-${j}`}
+              data-position={`${i},${j}`}  // Add this line
+              onClick={() => handleCardClick(i, j)}
+              style={{
                   ...styles.card,
                   backgroundColor: isMatched 
-                    ? (matchedBy === 'human' ? '#bbf7d0' : '#fecaca')  // green for player, red for AI
-                    : isRevealed 
-                    ? '#bfdbfe' 
-                    : '#f3f4f6',
+                      ? (matchedBy === 'human' ? '#bbf7d0' : '#fecaca')
+                      : isRevealed 
+                      ? '#bfdbfe' 
+                      : '#f3f4f6',
                   borderColor: isMatched
-                    ? (matchedBy === 'human' ? '#22c55e' : '#dc2626')  // darker green/red for borders
-                    : isRevealed 
-                    ? '#3b82f6' 
-                    : '#d1d5db',
+                      ? (matchedBy === 'human' ? '#22c55e' : '#dc2626')
+                      : isRevealed 
+                      ? '#3b82f6' 
+                      : '#d1d5db',
                   cursor: (isMatched || currentPlayer === 'ai' || isProcessing) ? 'not-allowed' : 'pointer'
-                }}
-                disabled={isMatched || currentPlayer === 'ai' || isProcessing}
-              >
-                {isMatched || isRevealed ? value : ' '}
-              </button>
+              }}
+              disabled={isMatched || currentPlayer === 'ai' || isProcessing}
+          >
+              {isMatched || isRevealed ? value : ' '}
+          </button>
             );
             })
           )}
