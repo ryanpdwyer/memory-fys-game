@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const FOOD_EMOJIS = ['🍕', '🍔', '🌮', '🍣', '🍜', '🍎', '🍇', '🥑', '🍦', '🧁', '🥐', '🥨', '🌭', '🥪', '🥞'];
+
 const DIFFICULTY_LEVELS = {
   easy: { rows: 4, cols: 4, maxValue: 8 },
   medium: { rows: 4, cols: 5, maxValue: 10 },
@@ -23,13 +25,20 @@ const MemoryGame = () => {
   const initializeBoard = () => {
     const { rows, cols } = DIFFICULTY_LEVELS[difficulty];
     const pairs = [];
-    for (let i = 1; i <= (rows * cols) / 2; i++) {
-      pairs.push(i, i);
+    // Use food emojis instead of numbers
+    const numPairs = (rows * cols) / 2;
+    const selectedEmojis = FOOD_EMOJIS.slice(0, numPairs);
+    
+    for (let emoji of selectedEmojis) {
+      pairs.push(emoji, emoji);
     }
+    
+    // Shuffle the pairs
     for (let i = pairs.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
     }
+    
     const newBoard = [];
     for (let i = 0; i < rows; i++) {
       newBoard.push(pairs.slice(i * cols, (i + 1) * cols));
@@ -147,7 +156,7 @@ const MemoryGame = () => {
 
   return (
     <div className="flex flex-col items-center p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Memory Card Game</h1>
+      <h1 className="text-2xl font-bold mb-4">Food Memory Game</h1>
       
       <div className="mb-4">
         <select 
@@ -220,7 +229,7 @@ const MemoryGame = () => {
                   key={`${i}-${j}`}
                   onClick={() => handleCardClick(i, j)}
                   className={`
-                    w-16 h-16 flex items-center justify-center text-xl font-bold
+                    w-16 h-16 flex items-center justify-center text-2xl
                     rounded border-2 transition-all duration-300
                     ${isMatched ? 'bg-green-200 border-green-500' :
                       isRevealed ? 'bg-blue-200 border-blue-500' :
@@ -229,7 +238,7 @@ const MemoryGame = () => {
                   `}
                   disabled={isMatched || currentPlayer === 'ai' || isProcessing}
                 >
-                  {isMatched || isRevealed ? value : '?'}
+                  {isMatched || isRevealed ? value : '❓'}
                 </button>
               );
             })
