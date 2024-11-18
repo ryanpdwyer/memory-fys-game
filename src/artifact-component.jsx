@@ -118,7 +118,7 @@ const styles = {
 const MemoryGame = () => {
   const [difficulty, setDifficulty] = useState('easy');
   const [board, setBoard] = useState([]);
-  const [matchedCards, setMatchedCards] = useState(new Set());
+  const [matchedCards, setMatchedCards] = useState(new Map()); // key: "row,col", value: "human" or "ai"
   const [revealedCards, setRevealedCards] = useState([]);
   const [playerMatches, setPlayerMatches] = useState(0);
   const [aiMatches, setAiMatches] = useState(0);
@@ -178,13 +178,14 @@ const MemoryGame = () => {
       setIsProcessing(true);
       const [[r1, c1], [r2, c2]] = newRevealedCards;
       
-      if (board[r1][c1] === board[r2][c2]) {
-        const newMatchedCards = new Set(matchedCards);
-        newMatchedCards.add(`${r1},${c1}`);
-        newMatchedCards.add(`${r2},${c2}`);
-        setMatchedCards(newMatchedCards);
-        setPlayerMatches(prev => prev + 1);
-      }
+     // In handleCardClick (player matches):
+if (board[r1][c1] === board[r2][c2]) {
+  const newMatchedCards = new Map(matchedCards);
+  newMatchedCards.set(`${r1},${c1}`, 'human');
+  newMatchedCards.set(`${r2},${c2}`, 'human');
+  setMatchedCards(newMatchedCards);
+  setPlayerMatches(prev => prev + 1);
+}
 
       setTimeout(() => {
         setRevealedCards([]);
@@ -225,10 +226,11 @@ const MemoryGame = () => {
 
           setRevealedCards([card1, card2]);
 
+         // In AI logic:
           if (board[card1[0]][card1[1]] === board[card2[0]][card2[1]]) {
-            const newMatchedCards = new Set(matchedCards);
-            newMatchedCards.add(`${card1[0]},${card1[1]}`);
-            newMatchedCards.add(`${card2[0]},${card2[1]}`);
+            const newMatchedCards = new Map(matchedCards);
+            newMatchedCards.set(`${card1[0]},${card1[1]}`, 'ai');
+            newMatchedCards.set(`${card2[0]},${card2[1]}`, 'ai');
             setMatchedCards(newMatchedCards);
             setAiMatches(prev => prev + 1);
           }
@@ -313,24 +315,34 @@ const MemoryGame = () => {
         >
           {board.map((row, i) => 
             row.map((value, j) => {
-              const isMatched = matchedCards.has(`${i},${j}`);
-              const isRevealed = revealedCards.some(([r, c]) => r === i && c === j);
+            // In the card render logic:
+            const isMatched = matchedCards.has(`${i},${j}`);
+            const matchedBy = matchedCards.get(`${i},${j}`);
+            const isRevealed = revealedCards.some(([r, c]) => r === i && c === j);
               
-              return (
-                <button
-                  key={`${i}-${j}`}
-                  onClick={() => handleCardClick(i, j)}
-                  style={{
-                    ...styles.card,
-                    backgroundColor: isMatched ? '#bbf7d0' : isRevealed ? '#bfdbfe' : '#f3f4f6',
-                    borderColor: isMatched ? '#22c55e' : isRevealed ? '#3b82f6' : '#d1d5db',
-                    cursor: (isMatched || currentPlayer === 'ai' || isProcessing) ? 'not-allowed' : 'pointer'
-                  }}
-                  disabled={isMatched || currentPlayer === 'ai' || isProcessing}
-                >
-                  {isMatched || isRevealed ? value : ' '}
-                </button>
-              );
+            return (
+              <button
+                key={`${i}-${j}`}
+                onClick={() => handleCardClick(i, j)}
+                style={{
+                  ...styles.card,
+                  backgroundColor: isMatched 
+                    ? (matchedBy === 'human' ? '#bbf7d0' : '#fecaca')  // green for player, red for AI
+                    : isRevealed 
+                    ? '#bfdbfe' 
+                    : '#f3f4f6',
+                  borderColor: isMatched
+                    ? (matchedBy === 'human' ? '#22c55e' : '#dc2626')  // darker green/red for borders
+                    : isRevealed 
+                    ? '#3b82f6' 
+                    : '#d1d5db',
+                  cursor: (isMatched || currentPlayer === 'ai' || isProcessing) ? 'not-allowed' : 'pointer'
+                }}
+                disabled={isMatched || currentPlayer === 'ai' || isProcessing}
+              >
+                {isMatched || isRevealed ? value : ' '}
+              </button>
+            );
             })
           )}
         </div>
