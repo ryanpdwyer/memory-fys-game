@@ -328,7 +328,7 @@ const MemoryGame = () => {
                   }}
                   disabled={isMatched || currentPlayer === 'ai' || isProcessing}
                 >
-                  {isMatched || isRevealed ? value : '❓'}
+                  {isMatched || isRevealed ? value : ' '}
                 </button>
               );
             })
