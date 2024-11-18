@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: gh-pages
 
 permissions:
   contents: write  # Add this line to explicitly grant write permissions
@@ -28,7 +28,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # Or whatever version you're using
+          node-version: '22'  # Or whatever version you're using
           
       - name: Install Dependencies
         run: npm install
