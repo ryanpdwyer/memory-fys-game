@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAGXRFWHRTb2Z0d2FyZQBNYWNpbnRvc2ggSEQgdjEuOTAg4Baq2gAAAD9JREFUKFNjZGBgYGBgUggUGBoa/N8BgwERnLx9uZkBlJDAyMjKAkYEHETVzkKACGcEAMON0IxtZG6XAAAAAElFTkSuQmCC" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.4.0/dist/speech-commands.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Artifact Viewer</title>
       <script type="module" crossorigin src="/memory-fys-game/assets/index-C6tGKknq.js"></script>
@@ -13,14 +13,19 @@
     <!-- Teachable Machine Section -->
     <div style="padding: 20px; border-bottom: 1px solid #ccc; margin-bottom: 20px;">
       <div>Teachable Machine Audio Model</div>
-      <button type="button" onclick="init()">Start</button>
-      <label>Teachable machine model url: 
-      <input type="text" id="model-url" placeholder="Enter model URL" style="margin-top: 10px; width: 100%;" />
-     </label>
+      <button type="button" class="btn btn-primary" onclick="init()">Start</button>
+      <div class="form-group"></div>
+        <label for="model-url">Teachable machine model URL:</label>
+        <input type="text" class="form-control" id="model-url" value="https://teachablemachine.withgoogle.com/models/rnDxAsp_L/" placeholder="Enter model URL">
+      </div>
       <div id="label-container"></div>
       <script type="text/javascript">
           async function createModel() {
               const URL = document.getElementById("model-url").value;
+              // Add a trailing slash to the URL if it doesn't exist
+              if (!URL.endsWith("/")) {
+                  URL = URL + "/";
+              }
               const checkpointURL = URL + "model.json"; // model topology
               const metadataURL = URL + "metadata.json"; // model metadata
               const recognizer = speechCommands.create(
