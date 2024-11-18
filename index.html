@@ -14,10 +14,13 @@
     <div style="padding: 20px; border-bottom: 1px solid #ccc; margin-bottom: 20px;">
       <div>Teachable Machine Audio Model</div>
       <button type="button" onclick="init()">Start</button>
+      <label>Teachable machine model url: 
+      <input type="text" id="model-url" placeholder="Enter model URL" style="margin-top: 10px; width: 100%;" />
+     </label>
       <div id="label-container"></div>
       <script type="text/javascript">
-          const URL = "https://teachablemachine.withgoogle.com/models/rnDxAsp_L/";
           async function createModel() {
+              const URL = document.getElementById("model-url").value;
               const checkpointURL = URL + "model.json"; // model topology
               const metadataURL = URL + "metadata.json"; // model metadata
               const recognizer = speechCommands.create(
