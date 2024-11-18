@@ -43,19 +43,83 @@
               for (let i = 0; i < classLabels.length; i++) {
                   labelContainer.appendChild(document.createElement("div"));
               }
+              
+              // Add this at the top with your other variables
+              let currentSequence = [];
+              const sequenceDisplay = document.createElement('div');
+              sequenceDisplay.id = 'sequence-display';
+              document.body.appendChild(sequenceDisplay);
+
+
+
               recognizer.listen(result => {
-                  const scores = result.scores;
-                  for (let i = 0; i < classLabels.length; i++) {
-                      const classPrediction = classLabels[i] + ": " + result.scores[i].toFixed(2);
-                      labelContainer.childNodes[i].innerHTML = classPrediction;
-                  }
-              }, {
-                  includeSpectrogram: true,
-                  probabilityThreshold: 0.75,
-                  invokeCallbackOnNoiseAndUnknown: true,
-                  overlapFactor: 0.50
-              });
+        // Get the most confident prediction
+        const scores = result.scores;
+        const maxScore = Math.max(...scores);
+        const predictedIndex = scores.indexOf(maxScore);
+        const predictedLabel = classLabels[predictedIndex];
+
+        // Update raw predictions display
+        for (let i = 0; i < classLabels.length; i++) {
+            const classPrediction = classLabels[i] + ": " + result.scores[i].toFixed(2);
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+        }
+
+        // Only process predictions above threshold (e.g., 0.8)
+        if (maxScore > 0.8) {
+            // Update sequence
+            if (currentSequence.length === 0) {
+                currentSequence.push(predictedLabel);
+            } else {
+                // If this is a different label than the last one
+                if (predictedLabel !== currentSequence[currentSequence.length - 1]) {
+                    if (currentSequence.length === 1) {
+                        // Check if it forms a valid sequence
+                        if (isValidSequence(currentSequence[0], predictedLabel)) {
+                            currentSequence.push(predictedLabel);
+                        } else {
+                            // Reset to just the new label if not a valid sequence
+                            currentSequence = [predictedLabel];
+                        }
+                    } else {
+                        // Reset to just the new label if we already have 2 items
+                        currentSequence = [predictedLabel];
+                    }
+                }
+            }
+
+            // Display current sequence
+            updateSequenceDisplay();
+        }
+    }, {
+        includeSpectrogram: true,
+        probabilityThreshold: 0.75,
+        invokeCallbackOnNoiseAndUnknown: true,
+        overlapFactor: 0.50
+    });
           }
+
+
+      // Add these helper functions
+function isValidSequence(first, second) {
+    // Define valid sequences here
+    const validSequences = {
+        'A': ['2'],  // A can be followed by 2
+        // Add more valid first letters and their allowed followers
+    };
+
+    return validSequences[first] && validSequences[first].includes(second);
+}
+
+function updateSequenceDisplay() {
+    sequenceDisplay.innerHTML = `Current Sequence: ${currentSequence.join(' → ')}`;
+    
+    // Optional: Add some basic styling
+    sequenceDisplay.style.padding = '10px';
+    sequenceDisplay.style.margin = '10px 0';
+    sequenceDisplay.style.fontWeight = 'bold';
+    sequenceDisplay.style.backgroundColor = currentSequence.length === 2 ? '#e0ffe0' : '#fff';
+}
       </script>
   </div>
     <div id="root"></div>
