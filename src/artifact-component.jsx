@@ -11,6 +11,110 @@ const DIFFICULTY_LEVELS = {
 const DISPLAY_DURATION = 2500;  // How long cards stay visible
 const AI_THINK_TIME = 800;      // How long before AI makes its move
 
+// Inline styles object
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '1rem',
+    maxWidth: '800px',
+    margin: '0 auto',
+    fontFamily: 'system-ui, sans-serif'
+  },
+  header: {
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    marginBottom: '1rem',
+    color: '#1a1a1a'
+  },
+  controls: {
+    marginBottom: '1rem',
+    display: 'flex',
+    gap: '0.5rem',
+    alignItems: 'center'
+  },
+  select: {
+    padding: '0.5rem',
+    borderRadius: '0.25rem',
+    border: '1px solid #ccc',
+    fontSize: '1rem',
+    marginRight: '0.5rem'
+  },
+  button: {
+    padding: '0.5rem 1rem',
+    backgroundColor: '#3b82f6',
+    color: 'white',
+    border: 'none',
+    borderRadius: '0.25rem',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    transition: 'background-color 0.2s'
+  },
+  scoreBoard: {
+    display: 'flex',
+    gap: '2rem',
+    marginBottom: '1rem',
+    fontSize: '1.125rem'
+  },
+  scoreActive: {
+    fontWeight: 'bold',
+    color: '#2563eb'
+  },
+  gameOver: {
+    marginBottom: '1rem',
+    fontSize: '1.25rem',
+    fontWeight: 'bold',
+    color: '#16a34a'
+  },
+  board: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '1rem'
+  },
+  labels: {
+    display: 'flex',
+    marginLeft: '5rem',
+    marginBottom: '0.5rem',
+    gap: '1rem'
+  },
+  label: {
+    width: '4rem',
+    textAlign: 'center',
+    fontWeight: 'bold'
+  },
+  rowLabel: {
+    width: '4rem',
+    height: '4rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 'bold'
+  },
+  grid: {
+    display: 'grid',
+    gap: '0.5rem'
+  },
+  card: {
+    width: '4rem',
+    height: '4rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '1.5rem',
+    border: '2px solid',
+    borderRadius: '0.25rem',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
+  },
+  status: {
+    marginTop: '1rem',
+    color: '#2563eb',
+    fontStyle: 'italic',
+    animation: 'pulse 2s infinite'
+  }
+};
+
 const MemoryGame = () => {
   const [difficulty, setDifficulty] = useState('easy');
   const [board, setBoard] = useState([]);
@@ -25,7 +129,6 @@ const MemoryGame = () => {
   const initializeBoard = () => {
     const { rows, cols } = DIFFICULTY_LEVELS[difficulty];
     const pairs = [];
-    // Use food emojis instead of numbers
     const numPairs = (rows * cols) / 2;
     const selectedEmojis = FOOD_EMOJIS.slice(0, numPairs);
     
@@ -33,7 +136,6 @@ const MemoryGame = () => {
       pairs.push(emoji, emoji);
     }
     
-    // Shuffle the pairs
     for (let i = pairs.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
@@ -77,7 +179,6 @@ const MemoryGame = () => {
       const [[r1, c1], [r2, c2]] = newRevealedCards;
       
       if (board[r1][c1] === board[r2][c2]) {
-        // Match found - mark it immediately
         const newMatchedCards = new Set(matchedCards);
         newMatchedCards.add(`${r1},${c1}`);
         newMatchedCards.add(`${r2},${c2}`);
@@ -85,7 +186,6 @@ const MemoryGame = () => {
         setPlayerMatches(prev => prev + 1);
       }
 
-      // Always wait before clearing revealed cards
       setTimeout(() => {
         setRevealedCards([]);
         if (board[r1][c1] !== board[r2][c2]) {
@@ -126,7 +226,6 @@ const MemoryGame = () => {
           setRevealedCards([card1, card2]);
 
           if (board[card1[0]][card1[1]] === board[card2[0]][card2[1]]) {
-            // Match found - mark it immediately
             const newMatchedCards = new Set(matchedCards);
             newMatchedCards.add(`${card1[0]},${card1[1]}`);
             newMatchedCards.add(`${card2[0]},${card2[1]}`);
@@ -134,7 +233,6 @@ const MemoryGame = () => {
             setAiMatches(prev => prev + 1);
           }
 
-          // Always wait before clearing revealed cards
           setTimeout(() => {
             setRevealedCards([]);
             if (board[card1[0]][card1[1]] !== board[card2[0]][card2[1]]) {
@@ -155,14 +253,14 @@ const MemoryGame = () => {
   const rowLabels = ['1', '2', '3', '4', '5'];
 
   return (
-    <div className="flex flex-col items-center p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Food Memory Game</h1>
+    <div style={styles.container}>
+      <h1 style={styles.header}>Memory Card Game</h1>
       
-      <div className="mb-4">
+      <div style={styles.controls}>
         <select 
           value={difficulty} 
           onChange={(e) => setDifficulty(e.target.value)}
-          className="mr-2 p-2 border rounded"
+          style={styles.select}
         >
           <option value="easy">Easy</option>
           <option value="medium">Medium</option>
@@ -170,52 +268,46 @@ const MemoryGame = () => {
         </select>
         <button 
           onClick={startNewGame}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          style={styles.button}
         >
           New Game
         </button>
       </div>
 
-      <div className="flex gap-8 mb-4">
-        <div className={`text-lg ${currentPlayer === 'human' ? 'font-bold text-blue-600' : ''}`}>
+      <div style={styles.scoreBoard}>
+        <div style={currentPlayer === 'human' ? styles.scoreActive : null}>
           Player Matches: {playerMatches}
         </div>
-        <div className={`text-lg ${currentPlayer === 'ai' ? 'font-bold text-blue-600' : ''}`}>
+        <div style={currentPlayer === 'ai' ? styles.scoreActive : null}>
           AI Matches: {aiMatches}
         </div>
       </div>
 
       {isGameOver && (
-        <div className="mb-4 text-xl font-bold text-green-600">
+        <div style={styles.gameOver}>
           {playerMatches > aiMatches ? "You won! 🎉" : 
            aiMatches > playerMatches ? "AI won! 🤖" : "It's a tie! 🤝"}
         </div>
       )}
 
-      {/* Column labels */}
-      <div className="flex ml-20 mb-2">
+      <div style={styles.labels}>
         {columnLabels.slice(0, DIFFICULTY_LEVELS[difficulty].cols).map((label) => (
-          <div key={label} className="w-16 text-center font-bold">{label}</div>
+          <div key={label} style={styles.label}>{label}</div>
         ))}
       </div>
 
-      <div className="flex items-center">
-        {/* Row labels */}
-        <div className="flex flex-col mr-2">
+      <div style={styles.board}>
+        <div style={{display: 'flex', flexDirection: 'column'}}>
           {rowLabels.slice(0, DIFFICULTY_LEVELS[difficulty].rows).map((label) => (
-            <div 
-              key={label} 
-              className="w-16 h-16 flex items-center justify-center font-bold"
-            >
+            <div key={label} style={styles.rowLabel}>
               {label}
             </div>
           ))}
         </div>
 
-        {/* Game board */}
         <div 
-          className="grid gap-2"
           style={{
+            ...styles.grid,
             gridTemplateColumns: `repeat(${DIFFICULTY_LEVELS[difficulty].cols}, 1fr)`
           }}
         >
@@ -228,14 +320,12 @@ const MemoryGame = () => {
                 <button
                   key={`${i}-${j}`}
                   onClick={() => handleCardClick(i, j)}
-                  className={`
-                    w-16 h-16 flex items-center justify-center text-2xl
-                    rounded border-2 transition-all duration-300
-                    ${isMatched ? 'bg-green-200 border-green-500' :
-                      isRevealed ? 'bg-blue-200 border-blue-500' :
-                      'bg-gray-100 border-gray-300 hover:bg-gray-200'}
-                    ${isProcessing ? 'cursor-not-allowed' : 'cursor-pointer'}
-                  `}
+                  style={{
+                    ...styles.card,
+                    backgroundColor: isMatched ? '#bbf7d0' : isRevealed ? '#bfdbfe' : '#f3f4f6',
+                    borderColor: isMatched ? '#22c55e' : isRevealed ? '#3b82f6' : '#d1d5db',
+                    cursor: (isMatched || currentPlayer === 'ai' || isProcessing) ? 'not-allowed' : 'pointer'
+                  }}
                   disabled={isMatched || currentPlayer === 'ai' || isProcessing}
                 >
                   {isMatched || isRevealed ? value : '❓'}
@@ -247,7 +337,7 @@ const MemoryGame = () => {
       </div>
 
       {(currentPlayer === 'ai' || isProcessing) && !isGameOver && (
-        <div className="mt-4 text-blue-600 animate-pulse">
+        <div style={styles.status}>
           {currentPlayer === 'ai' ? "AI is thinking..." : "Processing..."}
         </div>
       )}
