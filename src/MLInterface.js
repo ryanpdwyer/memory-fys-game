@@ -437,11 +437,10 @@ class MLModel {
             predictionDisplay.textContent = `Prediction: ${topPrediction.label} (${(topPrediction.confidence * 100).toFixed(2)}%)`
           // Update window.currentPrediction and window.previousPrediction, then run the updateSequence function
    
-          if (window.previousPrediction !== window.currentPrediction) {
+  
           window.previousPrediction = window.currentPrediction
           window.currentPrediction = topPrediction.label;
           window.updateSequenceDisplay();
-          }
       }
     }
       // Add a sleep function here to slow down the prediction rate

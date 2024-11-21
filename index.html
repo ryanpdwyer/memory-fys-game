@@ -70,87 +70,8 @@
         
     </script>
 
-      <script type="text/javascript">
-          // Add this at the top with your other variables
-          let currentSequence = [];
-          const sequenceDisplay = document.createElement('div');
-          sequenceDisplay.id = 'sequence-display';
-          document.body.appendChild(sequenceDisplay);
+     
 
-
-
-// Add this to clean up the sequence labels
-function cleanLabel(label) {
-    // If it starts with #, remove it
-    return label.replace('#', '');
-}
-
-
-
-      // Add these helper functions
-function isValidSequence(first, second) {
-    // Define valid sequences here
-    // Valid sequences are any letter followed by any number (or #1, #2 as they are labeled)
-    const validLetters = ['1', '2', '3', '4', '5', '6'];
-    const validNumbers = ['1', '2', '3', '4', '5', '6'];
-
-    return (validLetters.includes(first) && validNumbers.includes(second));
-
-}
-
-
-// Add this function to convert letter+number to coordinates
-function sequenceToCoordinates(sequence) {
-    if (sequence.length !== 2) return null;
-    
-    const nr = sequence[0];
-    const number = sequence[1];
-    
-    // Convert letter to row (A=0, B=1, etc.)
-    const col = parseInt(nr) - 1;
-    
-    // Convert number to row (1=0, 2=1, etc.)
-    const row = parseInt(number) - 1;
-    
-    return { row, col };
-}
-
-function updateSequenceDisplay() {
-    sequenceDisplay.innerHTML = `Current Sequence: ${currentSequence.join(' → ')}`;
-    
-    // This should also grab the current prediction and add it to the sequence if needed.
-
-    if (currentPrediction !== previousPrediction) {
-        // Add the current prediction to the sequence
-        currentSequence.push(cleanLabel(currentPrediction));
-        updateSequenceDisplay();   
-    }
-
-    // If we have a complete sequence
-    if (currentSequence.length === 2) {
-        const sequence = currentSequence.join('');
-        const coords = sequenceToCoordinates(sequence);
-        
-        if (coords) {
-            console.log('Trying to click:', coords);
-            // Find the button element and click it
-            const buttons = document.querySelectorAll('button');
-            const targetButton = Array.from(buttons).find(button => {
-                const buttonId = button.getAttribute('data-position');
-                return buttonId === `${coords.row},${coords.col}`;
-            });
-            
-            if (targetButton && !targetButton.disabled) {
-                targetButton.click();
-            }
-        }
-        
-        // Reset sequence after attempting click
-        currentSequence = [];
-    }
-}
-      </script>
-  </div>
   <div id="training"></div>
   <div id="flex-container">
     <div id="left-column">
@@ -162,10 +83,113 @@ function updateSequenceDisplay() {
     </div>
   </div>
     
+  <script type="text/javascript">
+    // Add this at the top with your other variables
+    let currentSequence = [];
+    // Add these variables at the top
+let lastUpdateTime = 0;
+let lastCardTime = 0;
+let lastClass = null;
+
+    const sequenceDisplay = document.createElement('div');
+    sequenceDisplay.id = 'sequence-display';
+    document.body.appendChild(sequenceDisplay);
+
+
+
+// Add this to clean up the sequence labels
+function cleanLabel(label) {
+// If it starts with #, remove it
+return label.replace('#', '');
+}
+
+
+
+// Add these helper functions
+function isValidSequence(first, second) {
+// Define valid sequences here
+// Valid sequences are any letter followed by any number (or #1, #2 as they are labeled)
+const validLetters = ['1', '2', '3', '4', '5', '6'];
+const validNumbers = ['1', '2', '3', '4', '5', '6'];
+
+return (validLetters.includes(first) && validNumbers.includes(second));
+
+}
+
+
+// Add this function to convert letter+number to coordinates
+function sequenceToCoordinates(sequence) {
+if (sequence.length !== 2) return null;
+
+const nr = sequence[0];
+const number = sequence[1];
+
+// Convert letter to row (A=0, B=1, etc.)
+const col = parseInt(nr) - 1;
+
+// Convert number to row (1=0, 2=1, etc.)
+const row = parseInt(number) - 1;
+
+return { row, col };
+}
+
+// Modify the updateSequenceDisplay function
+function updateSequenceDisplay() {
+  const currentTime = Date.now();
+  const timeSinceLastUpdate = (currentTime - lastUpdateTime) / 1000;
+
+  if (currentTime - lastCardTime < 2000) {
+    // Wait 2 seconds after clicking a card before allowing more input
+    return;
+  }
+
+  if (window.currentPrediction && /^[1-6]$/.test(window.currentPrediction)) {
+    const newClass = cleanLabel(window.currentPrediction);
+    
+    if (newClass !== lastClass || timeSinceLastUpdate >= 2) {
+      currentSequence.push(newClass);
+      lastUpdateTime = currentTime;
+      lastClass = newClass;
+      console.log('Current sequence:', currentSequence);
+    }
+  }
+
+  sequenceDisplay.innerHTML = `Current Sequence: ${currentSequence.join(' , ')}`;
+
+// If we have a complete sequence
+if (currentSequence.length === 2) {
+  const sequence = currentSequence.join('');
+  const coords = sequenceToCoordinates(sequence);
+  
+  if (coords) {
+      console.log('Trying to click:', coords);
+      // Update last card time
+        lastCardTime = currentTime;
+      // Find the button element and click it
+      const buttons = document.querySelectorAll('button');
+      const targetButton = Array.from(buttons).find(button => {
+          const buttonId = button.getAttribute('data-position');
+          return buttonId === `${coords.row},${coords.col}`;
+      });
+      
+      if (targetButton && !targetButton.disabled) {
+          targetButton.click();
+      }
+  }
+  
+  // Reset sequence after attempting click
+  currentSequence = [];
+}
+}
+</script>
+
       <!-- Load our scripts in order -->
       <script type="module" src="/src/MediaPipeWebcam.js"></script>
       <script type="module"  src="/src/MLInterface.js"></script>
     <script type="module" src="/src/main.jsx"></script>
+
+
+    
     <script>
         let predictor;
         let mlInterface;

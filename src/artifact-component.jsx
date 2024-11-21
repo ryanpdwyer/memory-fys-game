@@ -161,6 +161,7 @@ const MemoryGame = () => {
   };
 
   const handleCardClick = (row, col) => {
+    window.currentSequence = [];
     if (
       currentPlayer !== 'human' ||
       isProcessing ||
